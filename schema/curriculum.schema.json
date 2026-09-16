@@ -1,0 +1,255 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/poco-tech-org/aidd-spring-react-terraform-aws-ec2/blob/main/schema/curriculum.schema.json",
+  "title": "AIDD Spring React Terraform AWS EC2 Curriculum",
+  "description": "Schema for the machine-readable curriculum.yaml file.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "course", "sections"],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "1.0"
+    },
+    "course": {
+      "$ref": "#/$defs/course"
+    },
+    "sections": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/section"
+      }
+    }
+  },
+  "$defs": {
+    "course": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "title",
+        "subtitle",
+        "language",
+        "status",
+        "target_submission_date",
+        "estimated_duration_minutes",
+        "lecture_count",
+        "audience",
+        "prerequisites",
+        "learning_objectives",
+        "deliverables",
+        "tech_stack",
+        "production"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1
+        },
+        "subtitle": {
+          "type": "string",
+          "minLength": 1
+        },
+        "language": {
+          "type": "string",
+          "pattern": "^[a-z]{2}-[A-Z]{2}$"
+        },
+        "status": {
+          "$ref": "#/$defs/status"
+        },
+        "target_submission_date": {
+          "type": "string",
+          "format": "date"
+        },
+        "estimated_duration_minutes": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "lecture_count": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "audience": {
+          "$ref": "#/$defs/stringList"
+        },
+        "prerequisites": {
+          "$ref": "#/$defs/stringList"
+        },
+        "learning_objectives": {
+          "$ref": "#/$defs/stringList"
+        },
+        "deliverables": {
+          "$ref": "#/$defs/stringList"
+        },
+        "tech_stack": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/tech"
+          }
+        },
+        "production": {
+          "$ref": "#/$defs/production"
+        }
+      }
+    },
+    "tech": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "role"],
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "role": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "production": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["narration", "screencast", "console_verification", "ai_disclosure"],
+      "properties": {
+        "narration": {
+          "type": "string",
+          "minLength": 1
+        },
+        "screencast": {
+          "type": "string",
+          "minLength": 1
+        },
+        "console_verification": {
+          "type": "boolean"
+        },
+        "ai_disclosure": {
+          "$ref": "#/$defs/aiDisclosure"
+        }
+      }
+    },
+    "aiDisclosure": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["required", "required_text", "instructor_contribution"],
+      "properties": {
+        "required": {
+          "type": "boolean"
+        },
+        "required_text": {
+          "type": "string",
+          "minLength": 1
+        },
+        "instructor_contribution": {
+          "$ref": "#/$defs/stringList"
+        }
+      }
+    },
+    "section": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "order", "title", "goal", "estimated_minutes", "lectures"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^sec-[0-9]{2}$"
+        },
+        "order": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1
+        },
+        "goal": {
+          "type": "string",
+          "minLength": 1
+        },
+        "estimated_minutes": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "lectures": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/lecture"
+          }
+        }
+      }
+    },
+    "lecture": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "order",
+        "title",
+        "type",
+        "duration_minutes",
+        "objective",
+        "activities",
+        "outputs",
+        "verification",
+        "status"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^sec-[0-9]{2}-lec-[0-9]{2}$"
+        },
+        "order": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1
+        },
+        "type": {
+          "type": "string",
+          "enum": ["concept", "setup", "coding", "demo", "exercise", "review", "release"]
+        },
+        "duration_minutes": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "objective": {
+          "type": "string",
+          "minLength": 1
+        },
+        "activities": {
+          "$ref": "#/$defs/stringList"
+        },
+        "outputs": {
+          "$ref": "#/$defs/stringList"
+        },
+        "verification": {
+          "$ref": "#/$defs/stringList"
+        },
+        "status": {
+          "$ref": "#/$defs/status"
+        }
+      }
+    },
+    "status": {
+      "type": "string",
+      "enum": ["planned", "in_progress", "recorded", "published"]
+    },
+    "stringList": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    }
+  }
+}

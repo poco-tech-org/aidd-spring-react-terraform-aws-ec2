@@ -1,0 +1,753 @@
+schema_version: "1.0"
+
+course:
+  id: aidd-spring-react-terraform-aws-ec2
+  title: "AI駆動開発で作るSpring Boot × Reactアプリ：TerraformでAWS EC2本番構成"
+  subtitle: "Cognito認証・RDS Multi-AZ・ALB・EC2 Auto Scalingまで実装して動作確認"
+  language: ja-JP
+  status: planned
+  target_submission_date: "2026-10-20"
+  estimated_duration_minutes: 270
+  lecture_count: 44
+  audience:
+    - "Spring BootでWeb APIを開発した経験があり、AWSへのデプロイを実践したいエンジニア"
+    - "AIコーディングツールを使いながら、生成物を検証する開発プロセスを学びたいエンジニア"
+    - "EC2・Terraform・Cognito・RDSを組み合わせた構成を一通り動かしたいエンジニア"
+  prerequisites:
+    - "Java、Spring Boot、HTTP、REST APIの基礎知識"
+    - "React、JavaScript、npmの基礎知識"
+    - "Gitとコマンドラインの基本操作"
+    - "AWSアカウントと、必要なAWSリソースを作成できるIAM権限"
+  learning_objectives:
+    - "Codexを使って要件整理から実装、テスト、レビューまでのAIDDサイクルを実践できる"
+    - "Spring BootとReactで認証付きのWebアプリを構築できる"
+    - "Cognitoの認証情報をSpring Boot APIでJWTとして検証できる"
+    - "TerraformでVPC、EC2、ALB、Auto Scaling、RDSを構築できる"
+    - "RDS Multi-AZとEC2 Auto Scalingの状態をAWSマネジメントコンソールで確認できる"
+    - "スケールアウト、自動復旧、フェイルオーバーを動作確認し、不要なAWSリソースを安全に削除できる"
+  deliverables:
+    - "Spring BootバックエンドとReactフロントエンドのソースコード"
+    - "Cognito認証とRDS PostgreSQLを利用するWebアプリ"
+    - "Terraformによる2AZ構成のAWSインフラコード"
+    - "Auto Scaling、RDS Multi-AZ、障害復旧の検証記録"
+    - "レクチャーごとのチェックポイントと再現手順"
+  tech_stack:
+    - name: Spring Boot
+      role: "バックエンドとREST API"
+    - name: React
+      role: "フロントエンド"
+    - name: Amazon Cognito
+      role: "ユーザー認証"
+    - name: PostgreSQL
+      role: "ローカル開発用データベース"
+    - name: Amazon RDS for PostgreSQL
+      role: "AWS上のデータベース"
+    - name: Amazon EC2
+      role: "アプリケーション実行基盤"
+    - name: Application Load Balancer
+      role: "負荷分散とヘルスチェック"
+    - name: EC2 Auto Scaling
+      role: "スケールアウトとインスタンス自動復旧"
+    - name: Terraform
+      role: "Infrastructure as Code"
+    - name: Codex
+      role: "AI支援による要件整理、実装、テスト、レビュー"
+  production:
+    narration: "ElevenLabsによるTTS音声"
+    screencast: "講師自身が収録"
+    console_verification: true
+    ai_disclosure:
+      required: true
+      required_text: "This course contains the use of artificial intelligence."
+      instructor_contribution:
+        - "講師が要件、設計、技術選定を行う"
+        - "講師が生成コードをレビューし、テストと動作確認を行う"
+        - "講師がAWSマネジメントコンソールでTerraformの結果を確認する"
+        - "講師がスクリーンキャストと講義資料を制作する"
+
+sections:
+  - id: sec-01
+    order: 1
+    title: "講座の全体像と完成形"
+    goal: "完成するアプリ、構成、学習の進め方を把握し、最後までの到達点を明確にする"
+    estimated_minutes: 15
+    lectures:
+      - id: sec-01-lec-01
+        order: 1
+        title: "講座のゴールと完成デモ"
+        type: concept
+        duration_minutes: 5
+        objective: "完成するWebアプリの利用者体験と講座の到達点を理解する"
+        activities:
+          - "完成版のログインからCRUDまでを確認する"
+          - "講座全体の成果物と進め方を確認する"
+        outputs:
+          - "完成形チェックリスト"
+        verification:
+          - "受講者が完成形の主要画面とAPIの流れを説明できる"
+        status: planned
+      - id: sec-01-lec-02
+        order: 2
+        title: "アーキテクチャと技術選定"
+        type: concept
+        duration_minutes: 5
+        objective: "Spring Boot、React、Cognito、RDS、EC2、Terraformを採用する理由を理解する"
+        activities:
+          - "アプリケーションとAWSリソースの関係を確認する"
+          - "EC2構成をECS・EKSへ発展させる際の差分を整理する"
+        outputs:
+          - "アーキテクチャ図と技術選定メモ"
+        verification:
+          - "各サービスの責務と通信経路を説明できる"
+        status: planned
+      - id: sec-01-lec-03
+        order: 3
+        title: "開発環境・AWS料金・削除方針"
+        type: setup
+        duration_minutes: 5
+        objective: "講座を進めるためのローカル環境とAWS利用時のコスト管理方針を整える"
+        activities:
+          - "Java、Node.js、Terraform、AWS CLI、Gitを確認する"
+          - "検証後にterraform destroyを実行する運用を決める"
+        outputs:
+          - "環境確認結果とAWSリソース削除チェックリスト"
+        verification:
+          - "必要なCLIのバージョン確認とAWS認証確認が完了する"
+        status: planned
+
+  - id: sec-02
+    order: 2
+    title: "AIDD開発の準備と進め方"
+    goal: "Codexを利用しながらも、講師が設計と検証の責任を持つ開発サイクルを作る"
+    estimated_minutes: 21
+    lectures:
+      - id: sec-02-lec-01
+        order: 1
+        title: "Codexを開発パートナーとして使う"
+        type: concept
+        duration_minutes: 5
+        objective: "Codexへの依頼を具体化し、出力を検証可能な単位で受け取る方法を理解する"
+        activities:
+          - "コンテキスト、制約、完了条件を含むプロンプトを作る"
+          - "大きな依頼を設計、実装、テストの単位に分割する"
+        outputs:
+          - "AIDDプロンプトの基本テンプレート"
+        verification:
+          - "完了条件付きの依頼を1つ作成できる"
+        status: planned
+      - id: sec-02-lec-02
+        order: 2
+        title: "AGENTS.mdとリポジトリ規約"
+        type: setup
+        duration_minutes: 5
+        objective: "AIと人間が同じ品質ルールで作業するためのリポジトリ規約を定義する"
+        activities:
+          - "テスト、命名、セキュリティ、Terraform操作のルールを記述する"
+          - "作業開始前と変更後に規約を確認する流れを作る"
+        outputs:
+          - "AGENTS.mdの初版"
+        verification:
+          - "リポジトリの作業ルールをCodexが参照できる"
+        status: planned
+      - id: sec-02-lec-03
+        order: 3
+        title: "要求をタスクへ分解し実装計画を作る"
+        type: exercise
+        duration_minutes: 6
+        objective: "講座の完成形を小さな実装タスクと検証タスクへ分解する"
+        activities:
+          - "ユーザーストーリーと受け入れ条件を整理する"
+          - "ローカル、AWS、コンソール確認の順序を決める"
+        outputs:
+          - "実装バックログとセクション別チェックポイント"
+        verification:
+          - "各タスクに実装内容と完了条件が設定されている"
+        status: planned
+      - id: sec-02-lec-04
+        order: 4
+        title: "AI生成コードのレビューと検証"
+        type: review
+        duration_minutes: 5
+        objective: "AI生成物をそのまま採用せず、設計、テスト、セキュリティの観点でレビューする"
+        activities:
+          - "差分、テスト、依存関係、秘密情報の混入を確認する"
+          - "不明なAWS設定やコードは公式ドキュメントで確認する"
+        outputs:
+          - "コードレビュー観点チェックリスト"
+        verification:
+          - "生成コードの採用理由と修正点を説明できる"
+        status: planned
+
+  - id: sec-03
+    order: 3
+    title: "Spring Bootバックエンドを作る"
+    goal: "認証とデータベースを後から組み込める、テスト可能なREST APIを実装する"
+    estimated_minutes: 32
+    lectures:
+      - id: sec-03-lec-01
+        order: 1
+        title: "Spring Bootプロジェクト作成と起動確認"
+        type: coding
+        duration_minutes: 6
+        objective: "Spring Bootプロジェクトを作成し、最小のアプリケーションを起動する"
+        activities:
+          - "必要な依存関係とパッケージ構成を決める"
+          - "ヘルス確認用エンドポイントを作成する"
+        outputs:
+          - "起動可能なSpring Bootプロジェクト"
+        verification:
+          - "ローカルでアプリが起動し、ヘルス確認が成功する"
+        status: planned
+      - id: sec-03-lec-02
+        order: 2
+        title: "ドメインモデルとREST API設計"
+        type: concept
+        duration_minutes: 7
+        objective: "アプリのドメインとAPI契約を実装前に整理する"
+        activities:
+          - "リソース、状態、入力、エラー形式を定義する"
+          - "Reactから利用するAPIのリクエストとレスポンスを確認する"
+        outputs:
+          - "API仕様とドメインモデル"
+        verification:
+          - "主要ユースケースのAPI契約を説明できる"
+        status: planned
+      - id: sec-03-lec-03
+        order: 3
+        title: "PostgreSQL接続とFlywayマイグレーション"
+        type: coding
+        duration_minutes: 7
+        objective: "PostgreSQLへの接続と再現可能なスキーマ変更を実装する"
+        activities:
+          - "データソース設定とマイグレーションファイルを作る"
+          - "起動時にスキーマが作成されることを確認する"
+        outputs:
+          - "初期スキーマとFlywayマイグレーション"
+        verification:
+          - "空のデータベースから同じスキーマを再現できる"
+        status: planned
+      - id: sec-03-lec-04
+        order: 4
+        title: "CRUD APIとバリデーション"
+        type: coding
+        duration_minutes: 7
+        objective: "画面から利用するCRUD APIと入力バリデーションを実装する"
+        activities:
+          - "Controller、Service、Repositoryの責務を分ける"
+          - "正常系と入力エラーのレスポンスを実装する"
+        outputs:
+          - "CRUD APIとバリデーション"
+        verification:
+          - "APIクライアントから登録、取得、更新、削除を実行できる"
+        status: planned
+      - id: sec-03-lec-05
+        order: 5
+        title: "テスト・例外処理・Actuator health"
+        type: coding
+        duration_minutes: 5
+        objective: "APIの品質確認と、ALBから利用できるヘルスチェックを整備する"
+        activities:
+          - "ServiceとControllerのテストを追加する"
+          - "例外を統一的に処理し、Actuator healthを確認する"
+        outputs:
+          - "APIテストとヘルスチェックエンドポイント"
+        verification:
+          - "テストが成功し、ヘルスチェックが200を返す"
+        status: planned
+
+  - id: sec-04
+    order: 4
+    title: "Reactフロントエンドを作る"
+    goal: "認証とAPI連携を後から追加できる、操作可能なReact画面を作る"
+    estimated_minutes: 24
+    lectures:
+      - id: sec-04-lec-01
+        order: 1
+        title: "ReactプロジェクトとAPIクライアント"
+        type: coding
+        duration_minutes: 6
+        objective: "Reactプロジェクトを作成し、バックエンドAPIを呼び出す基盤を整える"
+        activities:
+          - "画面構成と環境変数の扱いを決める"
+          - "APIクライアントと型またはデータ形式を定義する"
+        outputs:
+          - "ReactプロジェクトとAPIクライアント"
+        verification:
+          - "ReactからローカルAPIの疎通を確認できる"
+        status: planned
+      - id: sec-04-lec-02
+        order: 2
+        title: "タスク一覧・登録・編集画面"
+        type: coding
+        duration_minutes: 7
+        objective: "主要なユーザー操作を行える画面を実装する"
+        activities:
+          - "一覧、登録、編集のコンポーネントを作る"
+          - "APIレスポンスを画面状態へ反映する"
+        outputs:
+          - "主要CRUD画面"
+        verification:
+          - "ブラウザから主要CRUD操作を完了できる"
+        status: planned
+      - id: sec-04-lec-03
+        order: 3
+        title: "ローディング・エラー・フォーム状態"
+        type: coding
+        duration_minutes: 6
+        objective: "通信中、入力エラー、APIエラーを利用者に分かりやすく表示する"
+        activities:
+          - "ローディングと空状態を追加する"
+          - "入力エラーとサーバーエラーを表示する"
+        outputs:
+          - "基本的なUX状態管理"
+        verification:
+          - "成功、入力エラー、通信エラーの各状態を再現できる"
+        status: planned
+      - id: sec-04-lec-04
+        order: 4
+        title: "Reactのビルドとバックエンド連携"
+        type: demo
+        duration_minutes: 5
+        objective: "Reactの本番ビルド成果物をデプロイ構成へ渡せる状態にする"
+        activities:
+          - "本番用環境変数とビルドコマンドを確認する"
+          - "Spring Bootとの配信方法とAPIパスを整理する"
+        outputs:
+          - "再現可能なフロントエンドビルド手順"
+        verification:
+          - "本番ビルドが成功し、想定したAPIへ接続できる"
+        status: planned
+
+  - id: sec-05
+    order: 5
+    title: "Cognito認証を組み込む"
+    goal: "Cognitoでログインし、ReactとSpring Boot APIの両方で認証状態を扱う"
+    estimated_minutes: 28
+    lectures:
+      - id: sec-05-lec-01
+        order: 1
+        title: "Cognito User PoolとApp Client"
+        type: concept
+        duration_minutes: 6
+        objective: "User Pool、App Client、認証フローの役割を理解する"
+        activities:
+          - "ユーザー、トークン、スコープの関係を確認する"
+          - "Terraformで管理する設定とアプリ設定を整理する"
+        outputs:
+          - "Cognito設定一覧"
+        verification:
+          - "認証フローと各設定値の用途を説明できる"
+        status: planned
+      - id: sec-05-lec-02
+        order: 2
+        title: "ReactのAuthorization Code + PKCEログイン"
+        type: coding
+        duration_minutes: 8
+        objective: "ReactからCognitoの認証フローを実行し、トークンを安全に扱う"
+        activities:
+          - "ログイン、コールバック、ログアウトの流れを実装する"
+          - "アクセストークンをAPIリクエストへ付与する"
+        outputs:
+          - "Reactの認証フロー"
+        verification:
+          - "ユーザーがログイン・ログアウトでき、認証済みAPIを呼び出せる"
+        status: planned
+      - id: sec-05-lec-03
+        order: 3
+        title: "Spring Security Resource ServerでJWTを検証する"
+        type: coding
+        duration_minutes: 8
+        objective: "Spring Boot APIでCognito発行JWTの署名とクレームを検証する"
+        activities:
+          - "Issuer、JWK、AudienceまたはClient IDの設定を確認する"
+          - "未認証・不正トークン・認証済みリクエストを比較する"
+        outputs:
+          - "JWT検証済みのSpring Security設定"
+        verification:
+          - "認証済みリクエストだけが保護APIへ到達できる"
+        status: planned
+      - id: sec-05-lec-04
+        order: 4
+        title: "ユーザー単位の認可と認証テスト"
+        type: exercise
+        duration_minutes: 6
+        objective: "ユーザーの識別子でデータを分離し、認証・認可の回帰テストを追加する"
+        activities:
+          - "JWTのsubとアプリケーションデータを関連付ける"
+          - "他ユーザーのデータへアクセスできないことをテストする"
+        outputs:
+          - "ユーザー単位の認可ルールとテスト"
+        verification:
+          - "ユーザー間のデータ分離がテストで保証される"
+        status: planned
+
+  - id: sec-06
+    order: 6
+    title: "ローカル統合と品質確認"
+    goal: "AWSへ進む前に、ローカル環境でアプリの主要フローを再現可能にする"
+    estimated_minutes: 22
+    lectures:
+      - id: sec-06-lec-01
+        order: 1
+        title: "Docker Composeとローカル環境変数"
+        type: setup
+        duration_minutes: 5
+        objective: "ローカルPostgreSQLとアプリを誰でも起動できる形にする"
+        activities:
+          - "Docker Composeでデータベースを起動する"
+          - "環境ごとの設定と秘密情報の境界を整理する"
+        outputs:
+          - "ローカル起動手順"
+        verification:
+          - "クリーンな環境からアプリとデータベースを起動できる"
+        status: planned
+      - id: sec-06-lec-02
+        order: 2
+        title: "ログインからCRUDまでの統合確認"
+        type: demo
+        duration_minutes: 5
+        objective: "ブラウザで認証からデータ操作までの主要ユーザーフローを確認する"
+        activities:
+          - "ログイン、登録、編集、削除、ログアウトを実行する"
+          - "ブラウザとAPIの通信を確認する"
+        outputs:
+          - "ローカル統合確認記録"
+        verification:
+          - "主要ユーザーフローがローカルで再現できる"
+        status: planned
+      - id: sec-06-lec-03
+        order: 3
+        title: "統合テストとAPI契約の確認"
+        type: coding
+        duration_minutes: 7
+        objective: "バックエンドとデータベースの組み合わせを自動検証する"
+        activities:
+          - "主要APIの統合テストを追加する"
+          - "Reactが依存するAPI契約の変更を確認する"
+        outputs:
+          - "統合テストとAPI確認項目"
+        verification:
+          - "CIまたはローカルコマンドで主要統合テストが成功する"
+        status: planned
+      - id: sec-06-lec-04
+        order: 4
+        title: "本番ビルド成果物とリリースチェック"
+        type: review
+        duration_minutes: 5
+        objective: "AWSへ配布する成果物と、デプロイ前の品質ゲートを確定する"
+        activities:
+          - "JAR、React成果物、設定値の扱いを確認する"
+          - "テスト、秘密情報、ログ出力のチェックを行う"
+        outputs:
+          - "デプロイ前チェックリスト"
+        verification:
+          - "同じコミットからデプロイ成果物を再生成できる"
+        status: planned
+
+  - id: sec-07
+    order: 7
+    title: "TerraformでAWS基盤を構築する"
+    goal: "AWSリソースをコード化し、2AZのネットワークとアプリ基盤を再現可能にする"
+    estimated_minutes: 38
+    lectures:
+      - id: sec-07-lec-01
+        order: 1
+        title: "Terraformプロジェクト・変数・state"
+        type: coding
+        duration_minutes: 7
+        objective: "Terraformの構成、入力値、stateの役割を理解し、安全な変更の基礎を作る"
+        activities:
+          - "provider、variables、outputs、backendの構成を決める"
+          - "terraform fmt、validate、planの流れを実行する"
+        outputs:
+          - "Terraformプロジェクトの骨格"
+        verification:
+          - "変更内容をplanで確認してからapplyできる"
+        status: planned
+      - id: sec-07-lec-02
+        order: 2
+        title: "VPC・2AZサブネット・ルート"
+        type: coding
+        duration_minutes: 10
+        objective: "ALB、EC2、RDSを分離配置できる2AZネットワークを構築する"
+        activities:
+          - "パブリック、アプリケーション、データベースサブネットを定義する"
+          - "Internet Gateway、NAT Gateway、ルートテーブルを関連付ける"
+        outputs:
+          - "2AZ VPCのTerraformコード"
+        verification:
+          - "Terraformとコンソールで各サブネットとルートを確認できる"
+        status: planned
+      - id: sec-07-lec-03
+        order: 3
+        title: "Security Group・IAM・Instance Profile"
+        type: coding
+        duration_minutes: 7
+        objective: "通信経路を必要最小限に制限し、EC2へ安全に権限を付与する"
+        activities:
+          - "ALB、EC2、RDS間のSecurity Groupルールを定義する"
+          - "EC2用IAMロールとインスタンスプロファイルを作る"
+        outputs:
+          - "通信制御とEC2権限のTerraformコード"
+        verification:
+          - "許可すべき通信だけがSecurity Groupに定義されている"
+        status: planned
+      - id: sec-07-lec-04
+        order: 4
+        title: "Cognito・RDS PostgreSQL・サブネットグループ"
+        type: coding
+        duration_minutes: 8
+        objective: "認証基盤とデータベースをTerraformで作成し、アプリ設定へ接続する"
+        activities:
+          - "Cognito User PoolとApp Clientを定義する"
+          - "RDS、DBサブネットグループ、パラメータを定義する"
+        outputs:
+          - "CognitoとRDSのTerraformコード"
+        verification:
+          - "作成されたCognitoとRDSの設定をコンソールで確認できる"
+        status: planned
+      - id: sec-07-lec-05
+        order: 5
+        title: "plan・applyとAWSコンソール確認"
+        type: demo
+        duration_minutes: 6
+        objective: "Terraformの実行結果をstateとAWSマネジメントコンソールの両方で確認する"
+        activities:
+          - "plan差分をレビューしてapplyする"
+          - "VPC、サブネット、Security Group、RDSの画面を確認する"
+        outputs:
+          - "Terraformとコンソールの照合記録"
+        verification:
+          - "主要リソースのコード、state、コンソール表示が一致する"
+        status: planned
+
+  - id: sec-08
+    order: 8
+    title: "EC2へデプロイする"
+    goal: "Spring BootアプリをEC2で再現可能に起動し、ログと設定を確認できるようにする"
+    estimated_minutes: 26
+    lectures:
+      - id: sec-08-lec-01
+        order: 1
+        title: "JARビルドとアーティファクト配布"
+        type: coding
+        duration_minutes: 6
+        objective: "アプリケーションを固定された成果物としてEC2へ渡す方法を作る"
+        activities:
+          - "テスト付きビルドでJARを作成する"
+          - "成果物のバージョンと配布手順を決める"
+        outputs:
+          - "再現可能なJARビルド手順"
+        verification:
+          - "同じコミットから同じ手順で成果物を作成できる"
+        status: planned
+      - id: sec-08-lec-02
+        order: 2
+        title: "EC2・Launch Template・user data・systemd"
+        type: coding
+        duration_minutes: 7
+        objective: "EC2起動時にアプリを自動セットアップし、プロセスを管理する"
+        activities:
+          - "Launch Templateとuser dataをTerraformで定義する"
+          - "systemdでSpring Bootを起動・再起動する"
+        outputs:
+          - "EC2起動設定とsystemdユニット"
+        verification:
+          - "新しいEC2でも起動後にアプリが自動起動する"
+        status: planned
+      - id: sec-08-lec-03
+        order: 3
+        title: "設定・Secrets・SSM・ログ"
+        type: demo
+        duration_minutes: 7
+        objective: "環境設定とログを安全に扱い、SSHに依存しない確認方法を整える"
+        activities:
+          - "秘密情報をコードやuser dataへ直書きしない方法を確認する"
+          - "AWS Systems ManagerとCloudWatchまたはjournalログを確認する"
+        outputs:
+          - "設定管理とログ確認手順"
+        verification:
+          - "アプリ設定と起動ログを安全に確認できる"
+        status: planned
+      - id: sec-08-lec-04
+        order: 4
+        title: "デプロイ後のスモークテストとトラブルシュート"
+        type: demo
+        duration_minutes: 6
+        objective: "EC2上のアプリを確認し、起動失敗時の調査順序を身につける"
+        activities:
+          - "ヘルスチェック、認証、API、データベース接続を確認する"
+          - "Security Group、ログ、設定、プロセスの順に切り分ける"
+        outputs:
+          - "EC2デプロイのスモークテスト記録"
+        verification:
+          - "デプロイ後の主要フローがEC2上で成功する"
+        status: planned
+
+  - id: sec-09
+    order: 9
+    title: "ALB・Auto Scaling・Multi-AZを実装する"
+    goal: "単一EC2構成を、負荷分散・自動復旧・データベース高可用性を備えた2AZ構成へ拡張する"
+    estimated_minutes: 45
+    lectures:
+      - id: sec-09-lec-01
+        order: 1
+        title: "単一EC2の限界と2AZ構成の設計"
+        type: concept
+        duration_minutes: 6
+        objective: "単一インスタンスの障害点を整理し、今回扱う高可用構成の責務を理解する"
+        activities:
+          - "ALB、EC2 Auto Scaling、RDS Multi-AZの役割を分ける"
+          - "EC2を2つのAZへ配置する構成を確認する"
+        outputs:
+          - "高可用構成図と障害シナリオ一覧"
+        verification:
+          - "Auto ScalingとRDS Multi-AZの目的の違いを説明できる"
+        status: planned
+      - id: sec-09-lec-02
+        order: 2
+        title: "ステートレスSpringとALBヘルスチェック"
+        type: coding
+        duration_minutes: 7
+        objective: "複数EC2へリクエストを分散できるようにアプリをステートレス化する"
+        activities:
+          - "ローカルセッションやインスタンス固有ファイルへの依存を確認する"
+          - "Actuator healthと起動待機時間をALB向けに調整する"
+        outputs:
+          - "ステートレス化したアプリとヘルスチェック設定"
+        verification:
+          - "どのEC2へ転送されても同じ認証・API動作になる"
+        status: planned
+      - id: sec-09-lec-03
+        order: 3
+        title: "ALB・Target Group・Security Group"
+        type: coding
+        duration_minutes: 8
+        objective: "ALBからHealthyなEC2へリクエストを転送する構成をTerraformで作る"
+        activities:
+          - "ALB、listener、Target Group、health checkを定義する"
+          - "ALBからEC2だけを許可するSecurity Groupへ変更する"
+        outputs:
+          - "ALBとTarget GroupのTerraformコード"
+        verification:
+          - "ALB経由でアプリへアクセスでき、TargetがHealthyになる"
+        status: planned
+      - id: sec-09-lec-04
+        order: 4
+        title: "Launch Template・Auto Scaling・Target Tracking"
+        type: coding
+        duration_minutes: 9
+        objective: "EC2を2AZへ配置し、負荷に応じて台数を調整するASGを作る"
+        activities:
+          - "min、desired、maxとインスタンス起動設定を定義する"
+          - "CPU使用率のTarget Trackingとヘルスチェックを設定する"
+        outputs:
+          - "EC2 Auto Scaling GroupのTerraformコード"
+        verification:
+          - "ASGが2AZへインスタンスを配置し、ALBへ登録する"
+        status: planned
+      - id: sec-09-lec-05
+        order: 5
+        title: "スケールアウトとEC2自動復旧の確認"
+        type: demo
+        duration_minutes: 7
+        objective: "Auto Scalingが負荷とインスタンス障害へ反応することをコンソールで確認する"
+        activities:
+          - "CPU負荷を発生させ、スケールアウトのイベントを確認する"
+          - "EC2を終了し、置き換えインスタンスとTargetの回復を確認する"
+        outputs:
+          - "スケールアウト・自動復旧の検証記録"
+        verification:
+          - "台数増加と異常インスタンスの自動補充を確認できる"
+        status: planned
+      - id: sec-09-lec-06
+        order: 6
+        title: "RDS Multi-AZ・フェイルオーバー・コンソール確認"
+        type: demo
+        duration_minutes: 8
+        objective: "RDS Multi-AZの構成とフェイルオーバー後のアプリ復旧を確認する"
+        activities:
+          - "RDSのPrimary AZ、Secondary AZ、Multi-AZ状態を確認する"
+          - "計画的フェイルオーバーを実行し、接続回復を確認する"
+        outputs:
+          - "RDS Multi-AZとフェイルオーバーの検証記録"
+        verification:
+          - "フェイルオーバー後も同じRDSエンドポイントでアプリが復旧する"
+        status: planned
+
+  - id: sec-10
+    order: 10
+    title: "総合動作確認と講座の仕上げ"
+    goal: "実装、インフラ、コンソール確認、教材を提出可能な品質へ揃える"
+    estimated_minutes: 19
+    lectures:
+      - id: sec-10-lec-01
+        order: 1
+        title: "CognitoからRDSまでの総合フローテスト"
+        type: demo
+        duration_minutes: 5
+        objective: "利用者の操作が認証、ALB、EC2、API、RDSを通過することを確認する"
+        activities:
+          - "ログインからデータ操作までを本番構成で実行する"
+          - "各レイヤーのログと状態を照合する"
+        outputs:
+          - "総合動作確認記録"
+        verification:
+          - "主要ユーザーフローが本番構成で完了する"
+        status: planned
+      - id: sec-10-lec-02
+        order: 2
+        title: "Terraform plan差分とコンソールの照合"
+        type: review
+        duration_minutes: 4
+        objective: "コード、state、実リソースの差分を確認し、意図しない変更を残さない"
+        activities:
+          - "最終terraform planをレビューする"
+          - "重要リソースのコンソール表示と照合する"
+        outputs:
+          - "最終インフラ照合チェックリスト"
+        verification:
+          - "意図しない差分がなく、確認結果を記録できる"
+        status: planned
+      - id: sec-10-lec-03
+        order: 3
+        title: "障害シナリオとロールバック"
+        type: exercise
+        duration_minutes: 4
+        objective: "講座で扱った障害と変更失敗に対する復旧手順を整理する"
+        activities:
+          - "EC2障害、RDSフェイルオーバー、デプロイ失敗を振り返る"
+          - "Terraform変更を戻す判断基準を確認する"
+        outputs:
+          - "障害対応とロールバック手順"
+        verification:
+          - "各障害で確認する画面と復旧操作を説明できる"
+        status: planned
+      - id: sec-10-lec-04
+        order: 4
+        title: "destroy・コスト・セキュリティ最終確認"
+        type: release
+        duration_minutes: 3
+        objective: "不要な課金と秘密情報の公開を防ぎ、教材公開前の安全確認を完了する"
+        activities:
+          - "terraform destroyとAWSコンソールで削除状態を確認する"
+          - "シークレット、tfvars、ログ、IAM権限を最終確認する"
+        outputs:
+          - "公開前セキュリティ・コストチェックリスト"
+        verification:
+          - "不要なAWSリソースと秘密情報が残っていない"
+        status: planned
+      - id: sec-10-lec-05
+        order: 5
+        title: "リポジトリとUdemy講座の提出準備"
+        type: release
+        duration_minutes: 3
+        objective: "コード、カリキュラム、講義動画、コース説明を提出可能な状態に揃える"
+        activities:
+          - "README、講座資料、チェックポイント、動画を確認する"
+          - "AI利用開示とコース説明を確認する"
+        outputs:
+          - "提出用リリースチェックリスト"
+        verification:
+          - "受講者がリポジトリと講座を再現手順に沿って利用できる"
+        status: planned
