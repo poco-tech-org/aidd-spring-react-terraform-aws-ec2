@@ -13,11 +13,13 @@ AI駆動開発（AIDD）で Spring Boot + React のWebアプリを開発し、Te
 - `curriculum.yaml`: セクション・レクチャー・完了条件の機械可読な定義
 - `schema/curriculum.schema.json`: `curriculum.yaml` のJSON Schema
 - `docs/curriculum.md`: 人間向けのカリキュラム一覧
-- `docs/lectures/`: レクチャーごとの進行資料
+- `docs/lectures/`: 各レクチャーの目的、Codexへの指示文、生成物の目安、検証手順
 - `backend/`: Spring Boot API
 - `frontend/`: Reactアプリ
 - `infra/`: TerraformによるAWS構成
 - `scripts/`: ビルド、デプロイ、動作確認、削除用スクリプト
+
+各レクチャーのMarkdownにある「Codexへの指示文」を作業開始時に使い、生成された差分は必ずレビューと検証を行ってください。記載されたパスは実装の目安であり、設計上の理由がある場合はCodexの提案をレビューして変更します。
 
 ## この講座で扱うこと
 
@@ -46,9 +48,9 @@ AI駆動開発（AIDD）で Spring Boot + React のWebアプリを開発し、Te
 ## 開発の進め方
 
 1. `curriculum.yaml`から対象レクチャーの目的と完了条件を確認する
-2. Codexと要件・設計を整理する
+2. レクチャーMarkdownのCodexプロンプトをコピーして実行する
 3. 小さな単位で実装する
-4. テストとローカル動作確認を行う
+4. 生成された差分をレビューし、テストとローカル動作確認を行う
 5. Terraformのplanとapplyを実行する
 6. AWSマネジメントコンソールで作成結果を確認する
 7. レクチャー資料の検証結果を更新する
