@@ -1,0 +1,13 @@
+spring:
+  config:
+    activate:
+      on-profile: local
+  datasource:
+    url: jdbc:postgresql://localhost:5432/aidd
+    username: aidd
+    password: aidd-local-only
+  jpa:
+    hibernate:
+      ddl-auto: validate
+  flyway:
+    enabled: true
