@@ -1,0 +1,46 @@
+#!/bin/bash
+set -euo pipefail
+
+dnf install -y java-21-amazon-corretto jq
+mkdir -p /opt/aidd /etc/aidd
+
+aws s3 cp "s3://${app_artifact_bucket}/${app_artifact_key}" /opt/aidd/app.jar --region "${aws_region}"
+
+secret_json=$(aws secretsmanager get-secret-value \
+  --secret-id "${db_secret_arn}" \
+  --query SecretString \
+  --output text \
+  --region "${aws_region}")
+db_password=$(printf '%s' "$secret_json" | jq -r .password)
+
+cat > /etc/aidd/app.env <<EOF
+SPRING_PROFILES_ACTIVE=aws
+SERVER_PORT=${app_port}
+SPRING_DATASOURCE_URL=jdbc:postgresql://${db_endpoint}/${db_name}
+SPRING_DATASOURCE_USERNAME=${db_username}
+SPRING_DATASOURCE_PASSWORD=$db_password
+SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI=${cognito_issuer}
+EOF
+
+cat > /etc/systemd/system/aidd-task-api.service <<'EOF'
+[Unit]
+Description=AIDD Task API
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+EnvironmentFile=/etc/aidd/app.env
+WorkingDirectory=/opt/aidd
+ExecStart=/usr/bin/java -jar /opt/aidd/app.jar
+Restart=on-failure
+RestartSec=5
+User=ec2-user
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+chown -R ec2-user:ec2-user /opt/aidd /etc/aidd
+systemctl daemon-reload
+systemctl enable --now aidd-task-api.service
