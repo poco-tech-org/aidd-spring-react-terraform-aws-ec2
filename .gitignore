@@ -1,0 +1,28 @@
+# Java / Maven
+backend/target/
+
+# Node / Vite
+frontend/node_modules/
+frontend/dist/
+
+# Local environment and secrets
+.env
+.env.*
+!.env.example
+frontend/.env.local
+backend/.env*
+
+# Terraform state and local artifacts
+.terraform/
+*.tfstate
+*.tfstate.*
+*.tfvars
+!infra/terraform.tfvars.example
+*.tfplan
+crash.log
+crash.*.log
+
+# OS/editor files
+.DS_Store
+.idea/
+.vscode/
