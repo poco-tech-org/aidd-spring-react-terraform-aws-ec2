@@ -1,15 +1,30 @@
 # Codex prompt template
 
-Use a small, reviewable request for each implementation step.
+各レクチャーのMarkdownにある「Codexへの指示文」を先に使い、必要な場合だけ次のテンプレートへ展開します。プロンプトは実装ファイルの一覧を固定するためではなく、目的・制約・完了条件をCodexと共有するために使います。
+
+## テンプレート
 
 ```text
+あなたはこのリポジトリのシニア開発者です。次のレクチャーだけを実施してください。
+
 目的:
 対象:
+背景:
+依頼:
 制約:
 既存コードで再利用するもの:
 完了条件:
 検証コマンド:
 変更後に説明してほしいリスク:
+報告形式:
 ```
 
-The prompt is a starting point, not a substitute for design or review.
+## 使い方
+
+1. `curriculum.yaml`で目的、活動、完了条件を確認する。
+2. レクチャーMarkdownのプロンプトをCodexへ貼り付ける。
+3. Codexが提案した変更範囲と生成物の目安を確認する。
+4. 差分、テスト、ログ、Terraform planをレビューする。
+5. 実行結果と未解決リスクをレクチャー資料へ記録する。
+
+パスは設計の目安であり、Codexの提案をレビューしたうえで変更して構いません。AWSの実リソース変更、秘密情報の扱い、破壊的な操作は必ず人間が最終判断します。
