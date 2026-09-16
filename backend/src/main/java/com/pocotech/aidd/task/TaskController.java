@@ -6,13 +6,14 @@ import java.util.UUID;
 import jakarta.validation.Valid;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
@@ -28,32 +29,27 @@ public class TaskController {
     }
 
     @GetMapping
-    public List<TaskResponse> findAll(
-            @RequestHeader(name = "X-Demo-User", defaultValue = "demo-user") String ownerSub) {
-        return taskService.findAll(ownerSub);
+    public List<TaskResponse> findAll(@AuthenticationPrincipal Jwt jwt) {
+        return taskService.findAll(jwt.getSubject());
     }
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public TaskResponse create(
-            @RequestHeader(name = "X-Demo-User", defaultValue = "demo-user") String ownerSub,
-            @Valid @RequestBody CreateTaskRequest request) {
-        return taskService.create(ownerSub, request);
+    public TaskResponse create(@AuthenticationPrincipal Jwt jwt, @Valid @RequestBody CreateTaskRequest request) {
+        return taskService.create(jwt.getSubject(), request);
     }
 
     @PutMapping("/{id}")
     public TaskResponse update(
-            @RequestHeader(name = "X-Demo-User", defaultValue = "demo-user") String ownerSub,
+            @AuthenticationPrincipal Jwt jwt,
             @PathVariable UUID id,
             @Valid @RequestBody UpdateTaskRequest request) {
-        return taskService.update(ownerSub, id, request);
+        return taskService.update(jwt.getSubject(), id, request);
     }
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void delete(
-            @RequestHeader(name = "X-Demo-User", defaultValue = "demo-user") String ownerSub,
-            @PathVariable UUID id) {
-        taskService.delete(ownerSub, id);
+    public void delete(@AuthenticationPrincipal Jwt jwt, @PathVariable UUID id) {
+        taskService.delete(jwt.getSubject(), id);
     }
 }
