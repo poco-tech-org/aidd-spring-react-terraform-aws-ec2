@@ -1,20 +1,38 @@
 import { useEffect, useState } from 'react';
 import { taskApi } from './api.js';
+import { auth } from './auth.js';
 
 const emptyForm = { title: '', description: '', status: 'TODO' };
 
+function AuthCallback() {
+  const [message, setMessage] = useState('ログインを完了しています…');
+
+  useEffect(() => {
+    auth.handleCallback()
+      .then(() => { window.location.replace('/'); })
+      .catch((error) => setMessage(`ログインに失敗しました: ${error.message}`));
+  }, []);
+
+  return <main className="container"><p>{message}</p></main>;
+}
+
 export default function App() {
+  const [user, setUser] = useState(null);
   const [tasks, setTasks] = useState([]);
   const [form, setForm] = useState(emptyForm);
   const [editingId, setEditingId] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
-  const loadTasks = async () => {
+  if (window.location.pathname === '/auth/callback') {
+    return <AuthCallback />;
+  }
+
+  const loadTasks = async (currentUser = user) => {
     setLoading(true);
     setError('');
     try {
-      setTasks(await taskApi.list());
+      setTasks(await taskApi.list(currentUser?.access_token));
     } catch (loadError) {
       setError(loadError.message);
     } finally {
@@ -23,7 +41,10 @@ export default function App() {
   };
 
   useEffect(() => {
-    loadTasks();
+    auth.getUser().then((currentUser) => {
+      setUser(currentUser);
+      loadTasks(currentUser);
+    });
   }, []);
 
   const submit = async (event) => {
@@ -31,9 +52,9 @@ export default function App() {
     if (!form.title.trim()) return;
     try {
       if (editingId) {
-        await taskApi.update(editingId, form);
+        await taskApi.update(editingId, form, user?.access_token);
       } else {
-        await taskApi.create(form);
+        await taskApi.create(form, user?.access_token);
       }
       setForm(emptyForm);
       setEditingId(null);
@@ -50,7 +71,7 @@ export default function App() {
 
   const remove = async (id) => {
     try {
-      await taskApi.remove(id);
+      await taskApi.remove(id, user?.access_token);
       await loadTasks();
     } catch (removeError) {
       setError(removeError.message);
@@ -61,6 +82,7 @@ export default function App() {
     <main className="container">
       <header className="header">
         <div><p className="eyebrow">AIDD TASK APP</p><h1>タスク管理</h1></div>
+        {auth.enabled && (user ? <button onClick={() => auth.logout()}>ログアウト</button> : <button onClick={() => auth.login()}>ログイン</button>)}
       </header>
       {error && <p className="error" role="alert">{error}</p>}
       <form className="task-form" onSubmit={submit}>
