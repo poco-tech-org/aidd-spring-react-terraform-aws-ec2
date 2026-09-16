@@ -32,7 +32,6 @@
         "subtitle",
         "language",
         "status",
-        "target_submission_date",
         "estimated_duration_minutes",
         "lecture_count",
         "audience",
@@ -61,10 +60,6 @@
         },
         "status": {
           "$ref": "#/$defs/status"
-        },
-        "target_submission_date": {
-          "type": "string",
-          "format": "date"
         },
         "estimated_duration_minutes": {
           "type": "integer",

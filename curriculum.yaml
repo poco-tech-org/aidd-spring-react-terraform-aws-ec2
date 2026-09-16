@@ -6,7 +6,6 @@ course:
   subtitle: "Cognito認証・RDS Multi-AZ・ALB・EC2 Auto Scalingまで実装して動作確認"
   language: ja-JP
   status: planned
-  target_submission_date: "2026-10-20"
   estimated_duration_minutes: 270
   lecture_count: 44
   audience:

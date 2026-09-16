@@ -8,7 +8,6 @@
 |---|---|
 | タイトル | AI駆動開発で作るSpring Boot × Reactアプリ：TerraformでAWS EC2本番構成 |
 | サブタイトル | Cognito認証・RDS Multi-AZ・ALB・EC2 Auto Scalingまで実装して動作確認 |
-| 提出目標 | 2026年10月20日 |
 | 想定時間 | 約4時間30分（270分） |
 | レクチャー数 | 44 |
 | ナレーション | ElevenLabsによるTTS音声 |
