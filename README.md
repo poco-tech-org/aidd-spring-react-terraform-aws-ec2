@@ -2,9 +2,22 @@
 
 AI駆動開発（AIDD）で Spring Boot + React のWebアプリを開発し、TerraformでAWS上にEC2ベースの本番構成を構築するUdemy講座の教材リポジトリです。
 
-講座タイトル（予定）:
+講座タイトル:
 
 > AI駆動開発で作るSpring Boot × Reactアプリ：TerraformでAWS EC2本番構成
+
+## このリポジトリの使い方
+
+カリキュラムは `curriculum.yaml` を正本としています。
+
+- `curriculum.yaml`: セクション・レクチャー・完了条件の機械可読な定義
+- `schema/curriculum.schema.json`: `curriculum.yaml` のJSON Schema
+- `docs/curriculum.md`: 人間向けのカリキュラム一覧
+- `docs/lectures/`: レクチャーごとの進行資料
+- `backend/`: Spring Boot API
+- `frontend/`: Reactアプリ
+- `infra/`: TerraformによるAWS構成
+- `scripts/`: ビルド、デプロイ、動作確認、削除用スクリプト
 
 ## この講座で扱うこと
 
@@ -30,63 +43,33 @@ AI駆動開発（AIDD）で Spring Boot + React のWebアプリを開発し、Te
 - Cognitoを認証基盤として利用
 - Terraformでインフラをコード化
 
-## AIDDの開発サイクル
+## 開発の進め方
 
-この講座では、AIにコードを生成させるだけではなく、次のサイクルで開発します。
-
-1. Codexと要件・設計を整理する
-2. 小さな単位で実装する
-3. テストとローカル動作確認を行う
-4. Codexの出力をレビューし、必要に応じて修正する
+1. `curriculum.yaml`から対象レクチャーの目的と完了条件を確認する
+2. Codexと要件・設計を整理する
+3. 小さな単位で実装する
+4. テストとローカル動作確認を行う
 5. Terraformのplanとapplyを実行する
 6. AWSマネジメントコンソールで作成結果を確認する
-7. 障害・スケール・フェイルオーバーを検証する
+7. レクチャー資料の検証結果を更新する
 
-## 主な技術
+詳細な作業規約は `AGENTS.md` を参照してください。
 
-| 分類 | 技術 |
-|---|---|
-| Backend | Spring Boot |
-| Frontend | React |
-| Authentication | Amazon Cognito |
-| Database | PostgreSQL / Amazon RDS |
-| Compute | Amazon EC2 |
-| Load Balancing | Application Load Balancer |
-| Scaling | EC2 Auto Scaling |
-| High Availability | RDS Multi-AZ |
-| Infrastructure as Code | Terraform |
-| AI-assisted development | Codex |
+## ローカル起動の概要
 
-## 動作確認の例
+```bash
+docker compose up -d postgres
+cd backend && mvn spring-boot:run -Dspring-boot.run.profiles=local
+cd frontend && npm ci && npm run dev
+```
 
-- ALBのTarget GroupでEC2がHealthyになること
-- Auto Scalingによってインスタンスが追加されること
-- EC2を停止・終了した場合にインスタンスが補充されること
-- RDSのPrimary AZとSecondary AZをコンソールで確認すること
-- RDSフェイルオーバー後にアプリケーションが復旧すること
-- TerraformのstateとAWSコンソール上の実リソースが一致すること
+認証を有効にする場合は、`frontend/.env.example`をもとにローカル環境変数を設定してください。環境変数ファイルや認証情報はコミットしないでください。
 
-## 前提
+## AWS利用時の注意
 
-- AWSアカウント
-- AWS CLI
-- Terraform
-- Java開発環境
-- Node.js開発環境
-- AWSリソースを作成できるIAM権限
-
-AWSリソースには料金が発生する場合があります。検証が終わったら、不要なリソースを削除してください。特に、ALB、NAT Gateway、EC2 Auto Scaling、RDS Multi-AZは作成したままにしないでください。
-
-## セキュリティ上の注意
-
-- AWSアクセスキー、パスワード、シークレットなどをコミットしない
-- 機密情報は環境変数、AWS Secrets Managerなどで管理する
-- Terraformの機密性が高いtfvarsファイルを公開しない
-- このリポジトリのコードを本番環境で利用する場合は、環境・権限・監視・バックアップを別途検討する
+AWSリソースには料金が発生する場合があります。検証・収録が終わったら `scripts/destroy-safe.sh` または `terraform destroy` を実行し、AWSコンソールでも削除状態を確認してください。特に、ALB、NAT Gateway、EC2 Auto Scaling、RDS Multi-AZは作成したままにしないでください。
 
 ## シリーズ予定
-
-同じ命名規則で、次の講座を予定しています。
 
 - `aidd-spring-react-terraform-aws-ecs`
 - `aidd-spring-react-terraform-aws-eks`
