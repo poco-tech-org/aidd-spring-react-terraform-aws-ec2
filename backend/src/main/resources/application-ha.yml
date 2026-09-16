@@ -1,0 +1,11 @@
+spring:
+  config:
+    activate:
+      on-profile: aws
+  datasource:
+    hikari:
+      maximum-pool-size: 10
+      connection-timeout: 3000
+      validation-timeout: 1000
+  session:
+    store-type: none
